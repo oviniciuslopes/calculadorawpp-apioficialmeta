@@ -21,7 +21,6 @@
             background: #10b981;
             cursor: pointer;
         }
-        /* Estilo para os inputs editáveis de valor */
         .num-input {
             background: transparent;
             border-bottom: 2px solid #10b981;
@@ -93,7 +92,7 @@
             </div>
 
             <p class="text-[11px] text-gray-500 mt-6 leading-relaxed">
-                *Valores calculados com as tarifas oficiais por mensagem da Meta (Brasil). Inclui a franquia mensal gratuita de 1.000 mensagens de serviço.
+                *Valores calculados com as tarifas oficiais por mensagem da Meta (Brasil).
             </p>
         </div>
 
@@ -102,7 +101,7 @@
 
             <!-- Bloco 1: Atendimento Inbound (Serviço) -->
             <div class="bg-[#111827] border border-gray-800/80 rounded-2xl p-6">
-                <div class="flex items-center gap-3 mb-4">
+                <div class="flex items-center gap-3 mb-3">
                     <span class="w-6 h-6 rounded bg-gray-800 text-gray-300 text-xs font-bold flex items-center justify-center">1</span>
                     <div>
                         <h2 class="text-sm font-bold text-white">Atendimento Inbound</h2>
@@ -110,7 +109,13 @@
                     </div>
                 </div>
 
-                <div class="mt-4">
+                <!-- Alerta de Franquia Gratuita -->
+                <div class="bg-emerald-950/40 border border-emerald-800/40 rounded-xl p-2.5 mb-4 flex items-center gap-2 text-xs text-emerald-300">
+                    <span class="text-base">🎁</span>
+                    <span><strong>Isenção Meta:</strong> As primeiras <strong>1.000 mensagens de serviço</strong> por mês são gratuitas. O valor de R$ 0,0350 aplica-se apenas ao excedente.</span>
+                </div>
+
+                <div class="mt-2">
                     <div class="flex justify-between items-center text-xs font-semibold mb-2">
                         <span class="text-gray-400">Mensagens de serviço</span>
                         <input type="text" id="val-servico" value="0" class="num-input">
@@ -162,7 +167,7 @@
         </div>
     </div>
 
-    <!-- Lógica JavaScript Atualizada -->
+    <!-- Lógica JavaScript -->
     <script>
         const RATES = {
             servico: 0.0350,
@@ -196,7 +201,6 @@
 
         function parseRawValue(str) {
             if (!str) return 0;
-            // Remove pontos de milhar e substitui vírgula
             const clean = str.toString().replace(/\./g, '').replace(',', '.').replace(/[^0-9]/g, '');
             return parseInt(clean) || 0;
         }
@@ -207,7 +211,6 @@
                 values[key] = parseInt(inputs[key].value) || 0;
             });
 
-            // Isenção de 1.000 msgs de serviço
             const excedenteServico = Math.max(0, values.servico - FRANQUIA_SERVICO);
             const costServico = excedenteServico * RATES.servico;
 
@@ -224,23 +227,19 @@
             costs.total.innerText = formatCurrency(total);
         }
 
-        // Configuração dos Eventos
         keys.forEach(key => {
-            // Quando move o slider
             inputs[key].addEventListener('input', () => {
                 const val = parseInt(inputs[key].value) || 0;
                 textInputs[key].value = val.toLocaleString('pt-BR');
                 calculate();
             });
 
-            // Enquanto digita no campo de texto
             textInputs[key].addEventListener('input', () => {
                 const rawVal = parseRawValue(textInputs[key].value);
                 inputs[key].value = rawVal;
                 calculate();
             });
 
-            // Ao sair do campo de texto (Formata com pontos)
             textInputs[key].addEventListener('blur', () => {
                 const rawVal = parseRawValue(textInputs[key].value);
                 textInputs[key].value = rawVal.toLocaleString('pt-BR');
