@@ -29,7 +29,7 @@
             font-size: 0.95rem;
             font-weight: 700;
             text-align: right;
-            width: 90px;
+            width: 110px;
             outline: none;
             padding-bottom: 2px;
         }
@@ -105,14 +105,14 @@
                     <span class="w-6 h-6 rounded bg-gray-800 text-gray-300 text-xs font-bold flex items-center justify-center">1</span>
                     <div>
                         <h2 class="text-sm font-bold text-white">Atendimento Inbound</h2>
-                        <p class="text-xs text-gray-400">Respostas da sua equipe dentro da janela de 24h — R$ 0,0350/msg</p>
+                        <p class="text-xs text-gray-400">Respostas da sua equipe dentro da janela de 24h — <span id="rate-label-servico">R$ 0,0350/msg</span></p>
                     </div>
                 </div>
 
                 <!-- Alerta de Franquia Gratuita -->
                 <div class="bg-emerald-950/40 border border-emerald-800/40 rounded-xl p-2.5 mb-4 flex items-center gap-2 text-xs text-emerald-300">
                     <span class="text-base">🎁</span>
-                    <span><strong>Isenção Meta:</strong> As primeiras <strong>1.000 mensagens de serviço</strong> por mês são gratuitas. O valor de R$ 0,0350 aplica-se apenas ao excedente.</span>
+                    <span><strong>Isenção Meta:</strong> As primeiras <strong>1.000 mensagens de serviço</strong> por mês são gratuitas. O valor de <span id="rate-box-servico">R$ 0,0350</span> aplica-se apenas ao excedente.</span>
                 </div>
 
                 <div class="mt-2">
@@ -120,7 +120,7 @@
                         <span class="text-gray-400">Mensagens de serviço</span>
                         <input type="text" id="val-servico" value="0" class="num-input">
                     </div>
-                    <input type="range" id="input-servico" min="0" max="100000" step="1" value="0" class="w-full accent-emerald-500">
+                    <input type="range" id="input-servico" min="0" max="1000000" step="1" value="0" class="w-full accent-emerald-500">
                 </div>
             </div>
 
@@ -138,28 +138,28 @@
                     <!-- Marketing -->
                     <div>
                         <div class="flex justify-between items-center text-xs font-semibold mb-2">
-                            <span class="text-gray-400">Marketing <span class="text-gray-500 font-normal">R$ 0,3217</span></span>
+                            <span class="text-gray-400">Marketing <span id="rate-label-marketing" class="text-gray-500 font-normal">R$ 0,3217</span></span>
                             <input type="text" id="val-marketing" value="0" class="num-input">
                         </div>
-                        <input type="range" id="input-marketing" min="0" max="50000" step="1" value="0" class="w-full accent-emerald-500">
+                        <input type="range" id="input-marketing" min="0" max="1000000" step="1" value="0" class="w-full accent-emerald-500">
                     </div>
 
                     <!-- Utilidade -->
                     <div>
                         <div class="flex justify-between items-center text-xs font-semibold mb-2">
-                            <span class="text-gray-400">Utilidade <span class="text-gray-500 font-normal">R$ 0,0350</span></span>
+                            <span class="text-gray-400">Utilidade <span id="rate-label-utilidade" class="text-gray-500 font-normal">R$ 0,0350</span></span>
                             <input type="text" id="val-utilidade" value="0" class="num-input">
                         </div>
-                        <input type="range" id="input-utilidade" min="0" max="50000" step="1" value="0" class="w-full accent-emerald-500">
+                        <input type="range" id="input-utilidade" min="0" max="1000000" step="1" value="0" class="w-full accent-emerald-500">
                     </div>
 
                     <!-- Autenticação -->
                     <div>
                         <div class="flex justify-between items-center text-xs font-semibold mb-2">
-                            <span class="text-gray-400">Autenticação <span class="text-gray-500 font-normal">R$ 0,0350</span></span>
+                            <span class="text-gray-400">Autenticação <span id="rate-label-autenticacao" class="text-gray-500 font-normal">R$ 0,0350</span></span>
                             <input type="text" id="val-autenticacao" value="0" class="num-input">
                         </div>
-                        <input type="range" id="input-autenticacao" min="0" max="50000" step="1" value="0" class="w-full accent-emerald-500">
+                        <input type="range" id="input-autenticacao" min="0" max="1000000" step="1" value="0" class="w-full accent-emerald-500">
                     </div>
                 </div>
             </div>
@@ -182,6 +182,8 @@
         
         const inputs = {};
         const textInputs = {};
+        const rawValues = { servico: 0, marketing: 0, utilidade: 0, autenticacao: 0 };
+
         const costs = {
             servico: document.getElementById('cost-servico'),
             marketing: document.getElementById('cost-marketing'),
@@ -199,6 +201,18 @@
             return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         }
 
+        function formatRate(val) {
+            return 'R$ ' + val.toFixed(4).replace('.', ',');
+        }
+
+        function updateRateLabels() {
+            document.getElementById('rate-label-servico').innerText = `${formatRate(RATES.servico)}/msg`;
+            document.getElementById('rate-box-servico').innerText = formatRate(RATES.servico);
+            document.getElementById('rate-label-marketing').innerText = formatRate(RATES.marketing);
+            document.getElementById('rate-label-utilidade').innerText = formatRate(RATES.utilidade);
+            document.getElementById('rate-label-autenticacao').innerText = formatRate(RATES.autenticacao);
+        }
+
         function parseRawValue(str) {
             if (!str) return 0;
             const clean = str.toString().replace(/\./g, '').replace(',', '.').replace(/[^0-9]/g, '');
@@ -206,17 +220,12 @@
         }
 
         function calculate() {
-            const values = {};
-            keys.forEach(key => {
-                values[key] = parseInt(inputs[key].value) || 0;
-            });
-
-            const excedenteServico = Math.max(0, values.servico - FRANQUIA_SERVICO);
+            const excedenteServico = Math.max(0, rawValues.servico - FRANQUIA_SERVICO);
             const costServico = excedenteServico * RATES.servico;
 
-            const costMarketing = values.marketing * RATES.marketing;
-            const costUtilidade = values.utilidade * RATES.utilidade;
-            const costAutenticacao = values.autenticacao * RATES.autenticacao;
+            const costMarketing = rawValues.marketing * RATES.marketing;
+            const costUtilidade = rawValues.utilidade * RATES.utilidade;
+            const costAutenticacao = rawValues.autenticacao * RATES.autenticacao;
 
             const total = costServico + costMarketing + costUtilidade + costAutenticacao;
 
@@ -228,24 +237,29 @@
         }
 
         keys.forEach(key => {
+            // Evento ao arrastar o Slider
             inputs[key].addEventListener('input', () => {
                 const val = parseInt(inputs[key].value) || 0;
+                rawValues[key] = val;
                 textInputs[key].value = val.toLocaleString('pt-BR');
                 calculate();
             });
 
+            // Evento ao digitar diretamente no campo numérico
             textInputs[key].addEventListener('input', () => {
-                const rawVal = parseRawValue(textInputs[key].value);
-                inputs[key].value = rawVal;
+                const val = parseRawValue(textInputs[key].value);
+                rawValues[key] = val;
+                inputs[key].value = Math.min(val, parseInt(inputs[key].max));
                 calculate();
             });
 
+            // Formatação do número ao tirar o foco do campo
             textInputs[key].addEventListener('blur', () => {
-                const rawVal = parseRawValue(textInputs[key].value);
-                textInputs[key].value = rawVal.toLocaleString('pt-BR');
+                textInputs[key].value = rawValues[key].toLocaleString('pt-BR');
             });
         });
 
+        updateRateLabels();
         calculate();
     </script>
 </body>
