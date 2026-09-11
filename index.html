@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Meta - API Oficial WhatsApp</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        input[type=range] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 8px;
+            height: 6px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #10b981;
+            cursor: pointer;
+        }
+        /* Estilo para os inputs editáveis de valor */
+        .num-input {
+            background: transparent;
+            border-bottom: 2px solid #10b981;
+            color: #34d399;
+            font-family: monospace;
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-align: right;
+            width: 90px;
+            outline: none;
+            padding-bottom: 2px;
+        }
+        .num-input:focus {
+            border-bottom-color: #6ee7b7;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body class="bg-[#0b0f19] text-gray-100 min-h-screen flex flex-col justify-center items-center p-4">
+
+    <!-- Header -->
+    <div class="max-w-4xl w-full mb-8 flex justify-between items-start">
+        <div>
+            <h1 class="text-3xl font-bold">Custo mensal na <span class="text-emerald-400">API Oficial</span> do WhatsApp</h1>
+            <p class="text-gray-400 text-sm mt-1">Simule o valor cobrado diretamente pela Meta por categoria de mensagem.</p>
+        </div>
+        <span class="bg-emerald-950/60 text-emerald-400 border border-emerald-800/50 text-xs px-3 py-1 rounded-full font-mono font-semibold tracking-wide">TARIFAS META</span>
+    </div>
+
+    <!-- Main Container -->
+    <div class="max-w-4xl w-full grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <!-- Card da Esquerda: Resultado -->
+        <div class="bg-[#111827] border border-gray-800/80 rounded-2xl p-6 flex flex-col justify-between">
+            <div>
+                <span class="text-xs font-semibold text-gray-400 tracking-wider uppercase">Estimativa Mensal</span>
+                <div class="text-3xl font-extrabold text-white mt-2 mb-1">
+                    <span id="total-cost">R$ 0,00</span><span class="text-xs text-gray-400 font-normal">/mês</span>
+                </div>
+                <div class="w-full bg-emerald-500 h-1.5 rounded-full mb-6"></div>
+
+                <!-- Detalhamento -->
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="flex items-center gap-2 text-gray-300">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Serviço
+                        </span>
+                        <span class="font-semibold text-gray-200" id="cost-servico">R$ 0,00</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="flex items-center gap-2 text-gray-300">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> Marketing
+                        </span>
+                        <span class="font-semibold text-gray-200" id="cost-marketing">R$ 0,00</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="flex items-center gap-2 text-gray-300">
+                            <span class="w-2.5 h-2.5 rounded-full bg-teal-500"></span> Utilidade
+                        </span>
+                        <span class="font-semibold text-gray-200" id="cost-utilidade">R$ 0,00</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="flex items-center gap-2 text-gray-300">
+                            <span class="w-2.5 h-2.5 rounded-full bg-cyan-600"></span> Autenticação
+                        </span>
+                        <span class="font-semibold text-gray-200" id="cost-autenticacao">R$ 0,00</span>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-[11px] text-gray-500 mt-6 leading-relaxed">
+                *Valores calculados com as tarifas oficiais por mensagem da Meta (Brasil). Inclui a franquia mensal gratuita de 1.000 mensagens de serviço.
+            </p>
+        </div>
+
+        <!-- Inputs / Sliders da Direita -->
+        <div class="md:col-span-2 space-y-6">
+
+            <!-- Bloco 1: Atendimento Inbound (Serviço) -->
+            <div class="bg-[#111827] border border-gray-800/80 rounded-2xl p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="w-6 h-6 rounded bg-gray-800 text-gray-300 text-xs font-bold flex items-center justify-center">1</span>
+                    <div>
+                        <h2 class="text-sm font-bold text-white">Atendimento Inbound</h2>
+                        <p class="text-xs text-gray-400">Respostas da sua equipe dentro da janela de 24h — R$ 0,0350/msg</p>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <div class="flex justify-between items-center text-xs font-semibold mb-2">
+                        <span class="text-gray-400">Mensagens de serviço</span>
+                        <input type="text" id="val-servico" value="0" class="num-input">
+                    </div>
+                    <input type="range" id="input-servico" min="0" max="100000" step="1" value="0" class="w-full accent-emerald-500">
+                </div>
+            </div>
+
+            <!-- Bloco 2: Disparos Outbound -->
+            <div class="bg-[#111827] border border-gray-800/80 rounded-2xl p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="w-6 h-6 rounded bg-gray-800 text-gray-300 text-xs font-bold flex items-center justify-center">2</span>
+                    <div>
+                        <h2 class="text-sm font-bold text-white">Disparos Outbound</h2>
+                        <p class="text-xs text-gray-400">Mensagens iniciadas pela empresa, por categoria de template.</p>
+                    </div>
+                </div>
+
+                <div class="space-y-5 mt-4">
+                    <!-- Marketing -->
+                    <div>
+                        <div class="flex justify-between items-center text-xs font-semibold mb-2">
+                            <span class="text-gray-400">Marketing <span class="text-gray-500 font-normal">R$ 0,3217</span></span>
+                            <input type="text" id="val-marketing" value="0" class="num-input">
+                        </div>
+                        <input type="range" id="input-marketing" min="0" max="50000" step="1" value="0" class="w-full accent-emerald-500">
+                    </div>
+
+                    <!-- Utilidade -->
+                    <div>
+                        <div class="flex justify-between items-center text-xs font-semibold mb-2">
+                            <span class="text-gray-400">Utilidade <span class="text-gray-500 font-normal">R$ 0,0350</span></span>
+                            <input type="text" id="val-utilidade" value="0" class="num-input">
+                        </div>
+                        <input type="range" id="input-utilidade" min="0" max="50000" step="1" value="0" class="w-full accent-emerald-500">
+                    </div>
+
+                    <!-- Autenticação -->
+                    <div>
+                        <div class="flex justify-between items-center text-xs font-semibold mb-2">
+                            <span class="text-gray-400">Autenticação <span class="text-gray-500 font-normal">R$ 0,0350</span></span>
+                            <input type="text" id="val-autenticacao" value="0" class="num-input">
+                        </div>
+                        <input type="range" id="input-autenticacao" min="0" max="50000" step="1" value="0" class="w-full accent-emerald-500">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Lógica JavaScript Atualizada -->
+    <script>
+        const RATES = {
+            servico: 0.0350,
+            marketing: 0.3217,
+            utilidade: 0.0350,
+            autenticacao: 0.0350
+        };
+
+        const FRANQUIA_SERVICO = 1000;
+
+        const keys = ['servico', 'marketing', 'utilidade', 'autenticacao'];
+        
+        const inputs = {};
+        const textInputs = {};
+        const costs = {
+            servico: document.getElementById('cost-servico'),
+            marketing: document.getElementById('cost-marketing'),
+            utilidade: document.getElementById('cost-utilidade'),
+            autenticacao: document.getElementById('cost-autenticacao'),
+            total: document.getElementById('total-cost')
+        };
+
+        keys.forEach(key => {
+            inputs[key] = document.getElementById(`input-${key}`);
+            textInputs[key] = document.getElementById(`val-${key}`);
+        });
+
+        function formatCurrency(val) {
+            return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function parseRawValue(str) {
+            if (!str) return 0;
+            // Remove pontos de milhar e substitui vírgula
+            const clean = str.toString().replace(/\./g, '').replace(',', '.').replace(/[^0-9]/g, '');
+            return parseInt(clean) || 0;
+        }
+
+        function calculate() {
+            const values = {};
+            keys.forEach(key => {
+                values[key] = parseInt(inputs[key].value) || 0;
+            });
+
+            // Isenção de 1.000 msgs de serviço
+            const excedenteServico = Math.max(0, values.servico - FRANQUIA_SERVICO);
+            const costServico = excedenteServico * RATES.servico;
+
+            const costMarketing = values.marketing * RATES.marketing;
+            const costUtilidade = values.utilidade * RATES.utilidade;
+            const costAutenticacao = values.autenticacao * RATES.autenticacao;
+
+            const total = costServico + costMarketing + costUtilidade + costAutenticacao;
+
+            costs.servico.innerText = formatCurrency(costServico);
+            costs.marketing.innerText = formatCurrency(costMarketing);
+            costs.utilidade.innerText = formatCurrency(costUtilidade);
+            costs.autenticacao.innerText = formatCurrency(costAutenticacao);
+            costs.total.innerText = formatCurrency(total);
+        }
+
+        // Configuração dos Eventos
+        keys.forEach(key => {
+            // Quando move o slider
+            inputs[key].addEventListener('input', () => {
+                const val = parseInt(inputs[key].value) || 0;
+                textInputs[key].value = val.toLocaleString('pt-BR');
+                calculate();
+            });
+
+            // Enquanto digita no campo de texto
+            textInputs[key].addEventListener('input', () => {
+                const rawVal = parseRawValue(textInputs[key].value);
+                inputs[key].value = rawVal;
+                calculate();
+            });
+
+            // Ao sair do campo de texto (Formata com pontos)
+            textInputs[key].addEventListener('blur', () => {
+                const rawVal = parseRawValue(textInputs[key].value);
+                textInputs[key].value = rawVal.toLocaleString('pt-BR');
+            });
+        });
+
+        calculate();
+    </script>
+</body>
+</html>
